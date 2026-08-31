@@ -1,0 +1,40 @@
+<main class="board">
+  <header class="board__head">
+    <p class="eyebrow">task-tracker</p>
+    <h1>Team backlog</h1>
+  </header>
+
+  <task-filter-bar
+    [statuses]="statuses"
+    [selectedStatus]="store.statusFilter()"
+    (searchChange)="store.setSearch($event)"
+    (selectedStatusChange)="store.setStatusFilter($event)"
+  />
+
+  <task-stats-bar
+    [stats]="store.stats()"
+    [completion]="store.completion()"
+    [loading]="store.loading()"
+    [boardTotal]="store.boardTotal()"
+  />
+
+  @if (store.error(); as message) {
+  <p class="notice notice--error">{{ message }}</p>
+  } @if (store.tasks().length === 0 && !store.loading()) {
+  <p class="notice">
+    Nothing matches this filter. Clear the search to see every task.
+  </p>
+  }
+
+  <ul class="tasks">
+    @for (task of store.tasks(); track task.id) {
+    <li>
+      <task-item
+        [task]="task"
+        (advance)="store.advance(task)"
+        (remove)="store.remove(task)"
+      />
+    </li>
+    }
+  </ul>
+</main>

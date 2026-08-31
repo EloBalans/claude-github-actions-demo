@@ -1,0 +1,33 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "rootDir": ".",
+    "sourceMap": true,
+    "declaration": false,
+    "moduleResolution": "bundler",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "importHelpers": true,
+    "target": "es2015",
+    "module": "esnext",
+    "lib": ["es2020", "dom"],
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
+    "strict": false,
+    "paths": {
+      "@claude-actions/task/contracts": ["./libs/task/contracts/src/index.ts"],
+      "@claude-actions/task/domain": ["./libs/task/domain/src/index.ts"],
+      "@claude-actions/task/feature-task-list": [
+        "./libs/task/feature-task-list/src/index.ts"
+      ],
+      "@claude-actions/task/ui": ["./libs/task/ui/src/index.ts"],
+      "@claude-actions/task/application-web": [
+        "./libs/task/application-web/src/index.ts"
+      ],
+      "@claude-actions/task/application-api": [
+        "./libs/task/application-api/src/index.ts"
+      ]
+    }
+  },
+  "exclude": ["node_modules", "tmp"]
+}

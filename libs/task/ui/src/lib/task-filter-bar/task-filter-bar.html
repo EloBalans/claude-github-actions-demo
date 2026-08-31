@@ -1,0 +1,33 @@
+<label class="field">
+  <span class="field__label">Search titles</span>
+  <input
+    type="search"
+    class="field__input"
+    placeholder="ship, checkout, storage…"
+    autocomplete="off"
+    [value]="search()"
+    (input)="onSearchInput($event)"
+  />
+</label>
+
+<div class="chips" role="group" aria-label="Filter by status">
+  <button
+    type="button"
+    class="chip"
+    [class.chip--on]="selectedStatus() === null"
+    (click)="selectedStatusChange.emit(null)"
+  >
+    all
+  </button>
+  @for (status of statuses(); track status) {
+  <button
+    type="button"
+    class="chip"
+    [attr.data-status]="status"
+    [class.chip--on]="selectedStatus() === status"
+    (click)="selectedStatusChange.emit(status)"
+  >
+    {{ status }}
+  </button>
+  }
+</div>

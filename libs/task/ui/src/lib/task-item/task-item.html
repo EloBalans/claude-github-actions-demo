@@ -1,0 +1,28 @@
+<button
+  type="button"
+  class="task__advance"
+  [attr.aria-label]="'Move ' + task().title + ' forward'"
+  (click)="advance.emit()"
+>
+  {{ task().status }}
+</button>
+
+<div class="task__body">
+  <p class="task__title">{{ task().title }}</p>
+  @if (task().tags.length > 0) {
+  <p class="task__tags">
+    @for (tag of task().tags; track tag) {
+    <span class="tag">{{ tag }}</span>
+    }
+  </p>
+  }
+</div>
+
+<button
+  type="button"
+  class="task__remove"
+  (click)="remove.emit()"
+  aria-label="Delete task"
+>
+  ×
+</button>

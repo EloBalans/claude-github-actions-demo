@@ -1,0 +1,13 @@
+<span>{{ stats().total }} shown</span>
+<span class="readout__sep">/</span>
+<span>todo {{ stats().byStatus.todo }}</span>
+<span>doing {{ stats().byStatus.doing }}</span>
+<span>done {{ stats().byStatus.done }}</span>
+<span class="readout__sep">/</span>
+<span>{{ completion() }} complete</span>
+@if (boardTotal() !== null && boardTotal() !== stats().total) {
+<span class="readout__sep">/</span>
+<span>{{ boardTotal() }} on the board</span>
+} @if (loading()) {
+<span class="readout__busy">loading…</span>
+}

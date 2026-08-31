@@ -1,0 +1,42 @@
+:root {
+  --bg: #eef0f3;
+  --card: #ffffff;
+  --ink: #171a1f;
+  --muted: #6b7280;
+  --line: #d9dde3;
+  --accent: #2f4bdc;
+  --status-todo: #9aa4b2;
+  --status-doing: #c97a15;
+  --status-done: #1f9d55;
+  --status-error: #b4232c;
+
+  --font-body: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono:
+    ui-monospace, 'SF Mono', 'Cascadia Mono', Menlo, Consolas, monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--ink);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
