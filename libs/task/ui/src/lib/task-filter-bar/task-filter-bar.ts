@@ -17,9 +17,11 @@ export class TaskFilterBar {
   readonly statuses = input.required<readonly TaskStatus[]>();
   readonly search = input('');
   readonly selectedStatus = input<TaskStatus | null>(null);
+  readonly selectedTag = input<string | null>(null);
 
   readonly searchChange = output<string>();
   readonly selectedStatusChange = output<TaskStatus | null>();
+  readonly selectedTagChange = output<string | null>();
 
   onSearchInput(event: Event): void {
     const input = event.target as HTMLInputElement;

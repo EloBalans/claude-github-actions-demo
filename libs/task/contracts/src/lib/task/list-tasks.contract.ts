@@ -5,6 +5,7 @@ export const beListTasksUrl = '/api/tasks';
 export type BeListTasksQueryParams = {
   search?: string;
   status?: TaskStatusDto;
+  tag?: string;
 };
 
 export type ListTasksQueryParams = BeListTasksQueryParams;

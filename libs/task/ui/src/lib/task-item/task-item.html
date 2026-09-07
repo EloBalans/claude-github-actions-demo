@@ -12,7 +12,14 @@
   @if (task().tags.length > 0) {
   <p class="task__tags">
     @for (tag of task().tags; track tag) {
-    <span class="tag">{{ tag }}</span>
+    <button
+      type="button"
+      class="tag"
+      [attr.aria-label]="'Filter by tag ' + tag"
+      (click)="tagSelect.emit(tag)"
+    >
+      {{ tag }}
+    </button>
     }
   </p>
   }
