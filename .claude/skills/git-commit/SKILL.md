@@ -10,7 +10,7 @@ allowed-tools: Bash(git status:*), Bash(git diff:*), Bash(git log:*), Bash(git a
 # git-commit
 
 Turn working changes into one or more clean Conventional Commits. The skill **proposes** a message,
-**discusses** it if the user wants to adjust, then **runs `git commit`**. The human stays in the
+**confirms** it with a yes/no form, then **runs `git commit`**. The human stays in the
 loop — this is a manual commit, not an autopilot.
 
 This skill is self-contained. The conventions it uses live at the bottom under **Conventions used by
@@ -68,14 +68,23 @@ change's nature, add an optional `scope`, write an imperative `description`, add
 change isn't self-explanatory, and attach the ticket in the subject only if one is discoverable. If the change
 is genuinely mixed in type, that's a signal to split (step 2).
 
-### 4. Discuss, then commit
+### 4. Confirm with a form, then commit
 
-Show the proposed message(s) and a one-line summary of what each commit will contain. Invite the
-user to tweak wording, scope, split/merge, or the type. This is a real discussion step — if they
-push back, revise rather than defending the draft.
+Keep this step short. Print the proposed message in a fenced block and nothing else — no summary of
+the diff, no explanation of the type or scope, no list of what you considered. The message speaks for
+itself.
 
-Once agreed, run the commit(s). Prefer a real multi-line message via `-F` (a temp file or heredoc)
-so body and footers survive:
+Then ask with **AskUserQuestion** (one question, `header: "Commit"`, question `"Commit with this
+message?"`):
+
+1. **Yes** — label is the commit subject itself (truncate to fit), description `"Commit as proposed"`.
+2. **No, I want to change** — description `"Adjust wording, type, scope, or split"`.
+
+One form per commit. If the answer is option 2, ask what to change, revise, and show the form again —
+still short, no defending the draft.
+
+Once agreed, run the commit. Prefer a real multi-line message via `-F` (a temp file or heredoc) so
+body and footers survive:
 
 ```bash
 git commit -F - <<'EOF'
@@ -85,7 +94,7 @@ Adds pl-PL translations and wires them into the locale loader.
 EOF
 ```
 
-Then confirm with `git log -1 --stat` and report the result. Don't push unless the user asks.
+Then report the result in one line (subject + short SHA + files changed). Don't push unless asked.
 
 ## Guardrails
 
@@ -94,6 +103,8 @@ Then confirm with `git log -1 --stat` and report the result. Don't push unless t
 - **Don't push or open PRs** — this skill stops at the commit. Handing off to a PR is a separate step.
 - The message is a **proposal**: don't commit until the user has had the chance to adjust, unless
   they've explicitly said "just commit it".
+- **Be brief.** Everything this skill prints — proposals, questions, the final report — is short and
+  to the point. No preamble, no recap of the diff, no explaining your reasoning unless asked.
 
 ## Conventions used by this skill
 
