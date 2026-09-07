@@ -4,7 +4,7 @@ description: >-
   Propose a Conventional Commits message for the current changes, discuss it, then commit. Use
   whenever the user wants to commit, write a commit message, save work to git, or asks what to name a
   commit — and as the final step of skills that hand off to commit. Does not push or open PRs.
-allowed-tools: Bash(git status:*), Bash(git diff:*), Bash(git log:*), Bash(git add:*), Bash(git reset:*), Bash(git apply:*), Bash(git commit:*), Bash(git rev-parse:*), Read, Grep, Glob, AskUserQuestion
+allowed-tools: Bash(git status:*), Bash(git diff:*), Bash(git log:*), Bash(git add:*), Bash(git reset), Bash(git apply --cached:*), Bash(git commit:*), Bash(git rev-parse:*), Read, Grep, Glob, AskUserQuestion
 ---
 
 # git-commit
@@ -21,6 +21,11 @@ sets different values, those win.
 read/stage/commit plus read-only file access — and deliberately no `git push` and no file-editing
 tools. This skill cannot push, and cannot "just fix that one thing" while writing a message. If the
 change itself needs work, that happens before the skill is invoked.
+
+The two index entries are pinned to the exact forms step 2 uses: `Bash(git reset)` is the bare
+index-emptying command only — it cannot match `git reset --hard`, which would discard uncommitted
+work — and `Bash(git apply --cached:*)` stages a patch without touching the working tree, unlike a
+bare `git apply`, which writes files and would reopen the file-editing hole this list exists to close.
 
 ## Workflow
 
@@ -109,13 +114,12 @@ Edit this section when adapting the skill to a repo — it's the single knob.
 - `scope`: affected module, lowercase, optional.
 - `description`: imperative, lowercase start, no trailing period, ≤ ~72 chars ("add", not "added").
 - `body`: add it when the change isn't self-explanatory.
-- `footers`: ticket refs, `BREAKING CHANGE:`, and the co-authorship trailer (below).
+- `footers`: ticket refs and `BREAKING CHANGE:`.
 
-**Co-authorship trailer:** a commit written with Claude Code keeps the harness's
-`Co-Authored-By: Claude <noreply@anthropic.com>` trailer (the exact identity string comes from the
-harness). Attribution is honest, and a trailer touches neither `<description>` linting nor changelog
-generation. A team that doesn't want it deletes this convention line and the trailer stops — the
-decision is made **here, once**, not argued per commit.
+**No AI attribution — ever.** Never add a `Co-Authored-By: Claude ...` trailer, a `Claude-Session:`
+trailer, or a "Generated with Claude Code" line to a commit made through this skill — not in the
+subject, the body or the footers. If the harness offers to append one, decline it. The person running
+the commit is its author; the tool that helped write it is not a co-author. Decided once, here.
 
 **Ticket (optional) — company standard is visible in the subject:**
 `<type>(<scope>): TICKET-100 <description>` (e.g. `feat(lang): TICKET-100 add new language`).

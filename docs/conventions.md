@@ -78,10 +78,13 @@ Generic set — extend or trim per project, but keep it small and documented:
 - **`!`**: mark a breaking change. Also add a `BREAKING CHANGE: <what breaks + migration>` footer.
 - **description**: imperative, lowercase start, no trailing period, ≤ ~72 chars.
   "add new language" — not "added" / "adds".
-- **co-authorship**: a commit written with Claude Code keeps the
-  `Co-Authored-By: Claude <noreply@anthropic.com>` trailer. It's honest attribution and it doesn't
-  touch the subject line, so linters and changelog tools don't care. Decided once here — flip it in
-  `git-commit`'s conventions section if the team wants it gone.
+- **no AI attribution — ever.** A commit made with Claude Code carries **no**
+  `Co-Authored-By: Claude ...` trailer, no `Claude-Session:` trailer, and no
+  "Generated with Claude Code" line, in the subject, the body or the footers. The same applies to PR
+  and issue descriptions. The author of a commit here is the person who made it; the tool used to
+  write it is not a co-author and does not sign the work. If the harness offers to append one,
+  decline it. This is not a per-commit judgement call — it is decided here, once, for every commit
+  in this repo.
 
 ## Ticket references — **canonical location is the subject**
 

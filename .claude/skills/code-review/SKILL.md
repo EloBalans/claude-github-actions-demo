@@ -129,6 +129,11 @@ Then **post the selected findings automatically** as inline PR comments (PR mode
   says: what is wrong · what it does at runtime · the corrected snippet.
 - Submit event: `REQUEST_CHANGES` if any posted finding is an **Error**, else `COMMENT`. Leave
   `APPROVE` to a human.
+- **Reviewing your own PR falls back to `COMMENT`.** The host rejects both `APPROVE` and
+  `REQUEST_CHANGES` from a PR's own author, and this repo's flow (`generate-pr`, then `code-review`
+  on the same branch) puts the author in the reviewer seat by default. Submit the findings as a
+  `COMMENT` review and say in the summary that the Error tier could not be recorded as a blocking
+  event — never let the whole review fail to post over the event name.
 
 If you were reviewing **local changes** (no PR), there's nowhere to post — present the table and note
 that posting will be available once a PR exists (hand off to `generate-pr` if they want one).
@@ -184,7 +189,7 @@ and by blast radius within a tier.
 - Info → `nitpick: …` / `suggestion: …` / `note: …`
 - Genuine open question → `question: …` (only when the answer changes what the author should do)
 
-**Submit event:** `REQUEST_CHANGES` if any posted finding is an Error, else `COMMENT`; `APPROVE` left to a human.
+**Submit event:** `REQUEST_CHANGES` if any posted finding is an Error, else `COMMENT`; `APPROVE` left to a human. On your own PR the host rejects both `APPROVE` and `REQUEST_CHANGES`, so fall back to `COMMENT` and say the Error tier couldn't be recorded as a blocking event.
 
 **Selection:** user chooses which findings post; nothing is posted without an explicit choice.
 
