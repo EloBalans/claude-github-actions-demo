@@ -64,9 +64,10 @@ git apply --cached split.patch      # stages only what's left; the rest stays in
 ### 3. Compose the message
 
 Format and rules are in **Conventions used by this skill** below. In short: pick the `type` from the
-change's nature, add an optional `scope`, write an imperative `description`, add a body when the
-change isn't self-explanatory, and attach the ticket in the subject only if one is discoverable. If the change
-is genuinely mixed in type, that's a signal to split (step 2).
+change's nature, add an optional `scope`, write an imperative `description`, and attach the ticket in
+the subject only if one is discoverable. **Keep it to the subject line** — the long explanation belongs
+in the PR description, not in every commit. If the change is genuinely mixed in type, that's a signal
+to split (step 2).
 
 ### 4. Confirm with a form, then commit
 
@@ -83,14 +84,16 @@ message?"`):
 One form per commit. If the answer is option 2, ask what to change, revise, and show the form again —
 still short, no defending the draft.
 
-Once agreed, run the commit. Prefer a real multi-line message via `-F` (a temp file or heredoc) so
-body and footers survive:
+Once agreed, run the commit. A subject-only message is just `git commit -m`. Use `-F` (a temp file or
+heredoc) only when the commit genuinely carries a footer, so it survives intact:
 
 ```bash
-git commit -F - <<'EOF'
-feat(lang): TICKET-100 add Polish locale
+git commit -m 'feat(lang): TICKET-100 add Polish locale'
 
-Adds pl-PL translations and wires them into the locale loader.
+git commit -F - <<'EOF'
+feat(api)!: TICKET-101 drop the legacy list endpoint
+
+BREAKING CHANGE: /v1/tasks is gone; call /api/tasks instead.
 EOF
 ```
 
@@ -98,7 +101,8 @@ Then report the result in one line (subject + short SHA + files changed). Don't 
 
 ## Guardrails
 
-- **Never fabricate** a ticket, a rationale, or a "why" body you can't support from the change.
+- **Never fabricate** a ticket, a rationale, or a "why" you can't support from the change.
+- **Keep the message short** — one subject line, two at the very most. Save the narrative for the PR.
 - **Don't bundle** unrelated concerns into one commit — split instead.
 - **Don't push or open PRs** — this skill stops at the commit. Handing off to a PR is a separate step.
 - The message is a **proposal**: don't commit until the user has had the chance to adjust, unless
@@ -117,15 +121,15 @@ Edit this section when adapting the skill to a repo — it's the single knob.
 ```
 <type>(<scope>)!: <description>
 
-<body — the "why", optional>
-
 <footers — ticket refs, BREAKING CHANGE, optional>
 ```
 
 - `scope`: affected module, lowercase, optional.
 - `description`: imperative, lowercase start, no trailing period, ≤ ~72 chars ("add", not "added").
-- `body`: add it when the change isn't self-explanatory.
-- `footers`: ticket refs and `BREAKING CHANGE:`.
+- `body`: **don't write one.** A commit here is the subject line and nothing else; the bigger
+  explanation goes in the PR description, where reviewers actually read it. The rare exception is a
+  single line naming a passenger change or a non-obvious "why" — never a paragraph.
+- `footers`: ticket refs and `BREAKING CHANGE:` — these still belong in the message.
 
 **No AI attribution — ever.** Never add a `Co-Authored-By: Claude ...` trailer, a `Claude-Session:`
 trailer, or a "Generated with Claude Code" line to a commit made through this skill — not in the
