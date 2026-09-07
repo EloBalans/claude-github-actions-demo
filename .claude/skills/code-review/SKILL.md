@@ -2,17 +2,17 @@
 name: code-review
 description: >-
   Review a PR or the local diff, sort findings into Error / Warning / Info, show them in a table, and
-  post the ones the user picks as inline PR comments. Use for reviewing a PR or branch, checking a
-  diff, or feedback before merge. Optional PR number/URL. Not for writing PR descriptions, applying
-  comments, or merging.
+  post the ones the user ticks in a checkbox form as inline PR comments. Use for reviewing a PR or
+  branch, checking a diff, or feedback before merge. Optional PR number/URL. Not for writing PR
+  descriptions, applying comments, or merging.
 ---
 
 # code-review
 
-Review changes, sort every finding into **Error / Warning / Info**, show them in a table,
-let the user choose which to post, then post the chosen ones inline on the PR. The hard part of a good
-review is calibrating what's worth saying — this skill's job is that calibration, then a clean
-select-and-post loop.
+Review changes, sort every finding into **Error / Warning / Info**, show them in a table, let the user
+tick the ones worth posting in a checkbox form, then post exactly those inline on the PR. The hard
+part of a good review is calibrating what's worth saying — this skill's job is that calibration, then
+a clean select-and-post loop.
 
 **An invented finding costs more than a missed one**: it teaches the team to stop reading the review.
 The bar for reporting is evidence (step 4), not suspicion — and a clean diff gets told it's clean.
@@ -115,13 +115,29 @@ Keep the "Finding" and "Suggested fix" cells to one line each; detail goes in th
 **Nothing found is a result.** Say the diff looks fine, name what you checked and followed, and stop.
 Don't pad the table to look thorough.
 
-## Step 6 — Let the user choose, then post
+## Step 6 — Ask with a checkbox form, then post
 
-Ask which findings to post and which to drop — e.g. "Post all, none, or specific numbers?" (an
-`AskUserQuestion` multi-select works well; offer _All errors+warnings_, _All_, _Pick_, _None_). Default
-nothing to posted until they choose.
+Never ask for the selection in prose ("post all, none, or which numbers?"). Ask with a form:
+**one `AskUserQuestion` call, `multiSelect: true`, one option per finding** — the user ticks the
+checkboxes for the findings that should land on the PR.
 
-Then **post the selected findings automatically** as inline PR comments (PR mode only):
+How to shape the form:
+
+- **One option = one finding, in table order.** Label it `#<n> <Severity> — <file>:<line>`, shortened
+  to the basename when the path is long. Put the finding and its fix in the option's `description`,
+  the same one-liners as the table row, so the form reads on its own without scrolling back.
+- **Four options per question, four questions per call.** That is the tool's limit, so a single call
+  covers up to 16 findings. Split them in table order — `#1–4`, `#5–8`, … — with headers `Findings 1-4`,
+  `Findings 5-8`. Never reorder findings just to fill a question.
+- **More than 16 findings:** don't silently truncate. Put the Errors and Warnings in the first form,
+  post what's ticked, then offer a second form for the Info tier, and say in the summary that a
+  second round is waiting.
+- **Ticking nothing posts nothing.** The tool always offers an "Other" escape for the user to decline
+  or to describe a different subset. An empty, skipped or ambiguous answer is *not* consent — post
+  nothing and say so.
+- **The form is the only consent.** No finding reaches the PR unless its own checkbox came back ticked.
+
+Then **post exactly the ticked findings** as inline PR comments (PR mode only):
 
 - Create one PR review, attach each selected finding to its file + line (right side of the diff for
   added lines), then submit — so they land as one coherent review, not a scattered stream.
@@ -134,9 +150,11 @@ Then **post the selected findings automatically** as inline PR comments (PR mode
   on the same branch) puts the author in the reviewer seat by default. Submit the findings as a
   `COMMENT` review and say in the summary that the Error tier could not be recorded as a blocking
   event — never let the whole review fail to post over the event name.
+- Close with a one-line summary: which numbers were posted, which the user left unticked.
 
-If you were reviewing **local changes** (no PR), there's nowhere to post — present the table and note
-that posting will be available once a PR exists (hand off to `generate-pr` if they want one).
+If you were reviewing **local changes** (no PR), there's nowhere to post — present the table, skip the
+form, and note that posting will be available once a PR exists (hand off to `generate-pr` if they want
+one).
 
 ## Guardrails
 
@@ -146,7 +164,7 @@ that posting will be available once a PR exists (hand off to `generate-pr` if th
 - **Respect the skip-list and deliberate decisions.** Don't re-review lock files; don't relitigate a
   choice the PR description or `CLAUDE.md` already justifies.
 - **No praise, no restating the diff, no speculation about intent.** The review is a defect report.
-- **Only post what the user selected.** No surprise comments.
+- **Only post what the user ticked.** The checkbox form is the consent; an unanswered form posts nothing.
 - **Don't fix, don't merge.** Applying comments is `fix-pr-comments`.
 
 ## Conventions used by this skill
@@ -191,7 +209,9 @@ and by blast radius within a tier.
 
 **Submit event:** `REQUEST_CHANGES` if any posted finding is an Error, else `COMMENT`; `APPROVE` left to a human. On your own PR the host rejects both `APPROVE` and `REQUEST_CHANGES`, so fall back to `COMMENT` and say the Error tier couldn't be recorded as a blocking event.
 
-**Selection:** user chooses which findings post; nothing is posted without an explicit choice.
+**Selection:** an `AskUserQuestion` checkbox form (`multiSelect: true`), one option per finding,
+max 4 options per question and 4 questions per call (16 findings; overflow goes to a second round).
+Nothing is posted without its own box ticked.
 
 **Tool declaration:** this skill deliberately declares no `allowed-tools`. It drives the connected
 code-hosting MCP, whose tool names differ per provider — pinning one provider's names would silently
