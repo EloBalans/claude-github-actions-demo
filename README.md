@@ -1,8 +1,8 @@
-# claude-github-actions-demo
+# Task tracker — Claude Code workflow skills
 
-A deliberately small Nx monorepo built to demo **Claude Code GitHub Actions**:
-automatic pull request review, `@claude` mentions, and Claude pushing fixes
-back to a branch.
+A deliberately small Nx monorepo used to demo the **Claude Code workflow skills**:
+commit → PR → review → fix, driven from an interactive Claude Code session.
+(The directory name is historical — there are no Claude GitHub Actions here.)
 
 ```
 apps/task-tracker             Angular 22 shell: routes, providers, styles
@@ -24,8 +24,7 @@ cannot reach a component. `platform:` sets what a project can be bundled into:
 end up in the browser bundle and the domain has no way to stop being
 framework-free. Breaking a layer fails `npm run lint`, not code review.
 
-Each file is small on purpose: a diff has to fit in a screenshot to be worth
-putting in an article.
+Each file is small on purpose: a diff should fit on one screen.
 
 ## Run it
 
@@ -45,36 +44,27 @@ npm run affected   # only what your branch touched
 npx nx graph       # see the layers, and who depends on the shared libs
 ```
 
-## The demo
+## One quirk worth knowing
 
-`main` is clean. [`docs/BUGS-PLAYBOOK.md`](docs/BUGS-PLAYBOOK.md) is the menu of
-bugs to plant, in three tiers:
-
-- **Tier 1** — a linter catches them. Proves the workflow runs.
-- **Tier 2** — compile, lint, and test green; break at runtime. Leaks, races,
-  stale state.
-- **Tier 3** — the diff touches only `libs/task/contracts` or
-  `libs/task/domain`. Both applications depend on them, so a reviewer who reads
-  just the diff cannot see the damage.
-
-One design decision worth knowing about: `apps/api/src/app/latency.ts` makes
-**shorter** search queries respond **slower**. That inversion is what turns a
-nested `subscribe` from a theoretical race into one you can reproduce on
-camera every single time.
+`libs/task/application-api/src/lib/latency.ts` makes **shorter** search queries
+respond **slower** — `searchDelayMs` subtracts from a fixed budget per
+character. It's deliberate: it makes a stale-response race reproducible on
+demand instead of once in fifty runs.
 
 ## The Claude setup
 
-| File                                       | What it does                                                                                        |
-| ------------------------------------------ | --------------------------------------------------------------------------------------------------- |
-| `CLAUDE.md`                                | Project rules. Claude reads it on every run. Delete it temporarily to show the difference it makes. |
-| `.claude/skills/angular-review/SKILL.md`   | How to review, versioned with the code. The rules themselves live in `CLAUDE.md`.                   |
-| `.github/workflows/claude.yml`             | Interactive: responds to `@claude` in comments and issues.                                          |
-| `.github/workflows/claude-code-review.yml` | Automation: reviews every PR, no mention needed.                                                    |
-| `.github/workflows/ci.yml`                 | `nx affected` lint/test/build.                                                                      |
+| File                                      | What it does                                                                                        |
+| ----------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| `CLAUDE.md`                               | Project rules. Claude reads it on every run. Delete it temporarily to show the difference it makes. |
+| `.claude/skills/git-commit/SKILL.md`      | Proposes a Conventional Commits message, discusses it, commits.                                     |
+| `.claude/skills/generate-pr/SKILL.md`     | Turns a branch of commits into a PR title and a structured description.                             |
+| `.claude/skills/code-review/SKILL.md`     | Reviews a PR or the local diff, categorizes findings, posts the ones you pick.                      |
+| `.claude/skills/fix-pr-comments/SKILL.md` | Works through review comments — fix, or decline with reasons — then hands off to `git-commit`.      |
+| `docs/conventions.md`                     | The commit / PR / branch standard the four skills encode. Single source of truth.                   |
+| `.github/workflows/ci.yml`                | `nx affected` lint/test/build.                                                                      |
 
-Both Claude workflows expect a `CLAUDE_CODE_OAUTH_TOKEN` repository secret
-(`claude setup-token`). To bill through the API instead, swap that input for
-`anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}`.
-
-Fastest path to a working setup: run `/install-github-app` from Claude Code in
-this repo and let it open the PR for you.
+The four skills run **interactively**, from a Claude Code session in this repo
+(`/code-review`, `/generate-pr`, …). Each one has a step where you approve,
+pick or override, so **none of them is wired into CI** — this repo carries no
+Claude GitHub Actions workflow, on purpose. PRs are read and written through
+whatever code-hosting MCP is connected; `git-commit` uses plain `git`.

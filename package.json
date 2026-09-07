@@ -2,6 +2,11 @@
   "name": "claude-github-actions-demo",
   "version": "0.0.0",
   "license": "MIT",
+  "packageManager": "npm@11.17.0",
+  "engines": {
+    "node": ">=22.12",
+    "npm": ">=11"
+  },
   "scripts": {
     "start": "nx serve task-tracker",
     "serve:api": "nx serve api",
