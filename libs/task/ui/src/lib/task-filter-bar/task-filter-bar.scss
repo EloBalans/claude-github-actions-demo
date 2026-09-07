@@ -62,7 +62,8 @@
     outline-offset: 2px;
   }
 
-  &--tag {
-    font-family: var(--font-mono);
+  &--tag::before {
+    content: '#';
+    opacity: 0.5;
   }
 }
