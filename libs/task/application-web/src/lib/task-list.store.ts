@@ -44,6 +44,7 @@ export class TaskListStore {
 
   private readonly search = signal(EMPTY_TASK_QUERY.search);
   private readonly status = signal<TaskStatus | null>(EMPTY_TASK_QUERY.status);
+  private readonly tag = signal<string | null>(EMPTY_TASK_QUERY.tag);
   private readonly tasksState = signal<readonly Task[]>([]);
   private readonly loadingState = signal(false);
   private readonly errorState = signal<string | null>(null);
@@ -61,6 +62,7 @@ export class TaskListStore {
   readonly loading = this.loadingState.asReadonly();
   readonly error = this.errorState.asReadonly();
   readonly statusFilter = this.status.asReadonly();
+  readonly tagFilter = this.tag.asReadonly();
 
   readonly stats = computed(() => summarizeTasks(this.tasks()));
   readonly boardTotal = computed(() => this.boardStatsState()?.total ?? null);
@@ -74,9 +76,9 @@ export class TaskListStore {
       distinctUntilChanged(),
     );
 
-    combineLatest([search$, toObservable(this.status)])
+    combineLatest([search$, toObservable(this.status), toObservable(this.tag)])
       .pipe(
-        map(([search, status]): TaskQuery => ({ search, status })),
+        map(([search, status, tag]): TaskQuery => ({ search, status, tag })),
         distinctUntilChanged(isSameQuery),
         tap(() => {
           this.loadingState.set(true);
@@ -108,6 +110,10 @@ export class TaskListStore {
 
   setStatusFilter(status: TaskStatus | null): void {
     this.status.set(status);
+  }
+
+  setTagFilter(tag: string | null): void {
+    this.tag.set(tag);
   }
 
   advance(task: Task): void {

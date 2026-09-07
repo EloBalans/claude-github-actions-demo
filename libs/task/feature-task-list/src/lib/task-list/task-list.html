@@ -7,8 +7,10 @@
   <task-filter-bar
     [statuses]="statuses"
     [selectedStatus]="store.statusFilter()"
+    [selectedTag]="store.tagFilter()"
     (searchChange)="store.setSearch($event)"
     (selectedStatusChange)="store.setStatusFilter($event)"
+    (selectedTagChange)="store.setTagFilter($event)"
   />
 
   <task-stats-bar
@@ -22,7 +24,7 @@
   <p class="notice notice--error">{{ message }}</p>
   } @if (store.tasks().length === 0 && !store.loading()) {
   <p class="notice">
-    Nothing matches this filter. Clear the search to see every task.
+    Nothing matches this filter. Clear the filters to see every task.
   </p>
   }
 
@@ -33,6 +35,7 @@
         [task]="task"
         (advance)="store.advance(task)"
         (remove)="store.remove(task)"
+        (tagSelect)="store.setTagFilter($event)"
       />
     </li>
     }

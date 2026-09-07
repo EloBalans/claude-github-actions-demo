@@ -35,6 +35,7 @@ export class TaskDataService {
     const queryParams: ListTasksQueryParams = {
       search: query.search,
       ...(query.status === null ? {} : { status: query.status }),
+      ...(query.tag === null ? {} : { tag: query.tag }),
     };
 
     return this.http

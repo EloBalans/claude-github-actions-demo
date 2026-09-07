@@ -19,4 +19,5 @@ export class TaskItem {
 
   readonly advance = output<void>();
   readonly remove = output<void>();
+  readonly tagSelect = output<string>();
 }

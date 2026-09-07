@@ -4,13 +4,17 @@ import type { TaskQuery } from './task-query';
 
 export function filterTasks(tasks: readonly Task[], query: TaskQuery): Task[] {
   const needle = query.search.trim().toLowerCase();
+  const wantedTag = query.tag?.trim().toLowerCase() ?? '';
 
   return tasks.filter((task) => {
     const matchesStatus = query.status === null || task.status === query.status;
     const matchesSearch =
       needle === '' || task.title.toLowerCase().includes(needle);
+    const matchesTag =
+      wantedTag === '' ||
+      task.tags.some((tag) => tag.toLowerCase() === wantedTag);
 
-    return matchesStatus && matchesSearch;
+    return matchesStatus && matchesSearch && matchesTag;
   });
 }
 

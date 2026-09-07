@@ -36,7 +36,7 @@ export function createTasksRouter(
   const router = Router();
 
   router.get(beListTasksUrl, async (req, res) => {
-    const query = readQuery(req.query.search, req.query.status);
+    const query = readQuery(req.query.search, req.query.status, req.query.tag);
 
     await delay(searchDelayMs(query.search));
 
@@ -119,10 +119,15 @@ export function createTasksRouter(
   return router;
 }
 
-function readQuery(rawSearch: unknown, rawStatus: unknown): TaskQuery {
+function readQuery(
+  rawSearch: unknown,
+  rawStatus: unknown,
+  rawTag: unknown,
+): TaskQuery {
   return {
     search: isString(rawSearch) ? rawSearch : '',
     status: isTaskStatusDto(rawStatus) ? rawStatus : null,
+    tag: isString(rawTag) && rawTag.trim() !== '' ? rawTag : null,
   };
 }
 

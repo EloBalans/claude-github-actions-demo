@@ -31,3 +31,14 @@
   </button>
   }
 </div>
+
+@if (selectedTag(); as tag) {
+<button
+  type="button"
+  class="chip chip--on chip--tag"
+  [attr.aria-label]="'Clear the ' + tag + ' tag filter'"
+  (click)="selectedTagChange.emit(null)"
+>
+  {{ tag }} ×
+</button>
+}
