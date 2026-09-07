@@ -32,6 +32,15 @@
   }
 </div>
 
+<button
+  type="button"
+  class="chip"
+  [attr.aria-label]="'Sorted ' + sortOrderLabel() + '. Click to flip the order.'"
+  (click)="onSortOrderToggle()"
+>
+  {{ sortOrderLabel() }}
+</button>
+
 @if (selectedTag(); as tag) {
 <button
   type="button"
