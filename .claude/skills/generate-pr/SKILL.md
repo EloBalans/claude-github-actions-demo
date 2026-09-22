@@ -1,24 +1,27 @@
 ---
 name: generate-pr
 description: >-
-  Compose a PR title and description from the branch's Conventional Commits and diff, then create the
-  PR — or update one whose description is thin. Use for opening a PR, raising a merge request, writing
-  or filling in a PR body, or "make a PR". Not for reviewing others' PRs, merging, or commit
-  messages.
+  Compose a PR title and description from the branch's diff, then create the PR — or update one whose
+  description is thin. Use for opening a PR, raising a merge request, writing or filling in a PR body,
+  or "make a PR". Not for reviewing others' PRs, merging, or commit messages.
 ---
 
 # generate-pr
 
-Turn a branch of Conventional Commits into a clean PR: a Conventional-Commits-style **title** and a
-structured **description**, then write it to the PR through the connected MCP.
+Turn a branch of work into a clean PR: a short **title** and a structured **description**, then write
+it to the PR through the connected code-hosting MCP.
 
-Core idea: **the commits already carry most of the signal.** Type, scope, breaking flag, and a first
-draft of the title come straight from the commit messages — no diff needed. The diff is only
-enrichment for _what changed_. Summarize a large diff by area, don't read it line by line.
+Core idea: **the diff is the source of truth.** What the PR does, and which parts of the system it
+touches, is read off the changed files and the changes themselves — not off the commit messages. Commit
+messages are unreliable: they may be terse, batched, reworded, or "wip". Read them only as a hint about
+_why_ a change was made, never as the description of _what_ changed, and never assume any particular
+message format or naming scheme.
+
+Summarize a large diff by area, don't read it line by line.
 
 **Audience: the team that owns this repo.** They know the product, the stack and where the branch
-lands, so the body stays short and says only what the code and the commits don't already say. This is
-not an open-source drive-by PR that has to introduce itself to a stranger.
+lands, so the body stays short and says only what the code doesn't already say. This is not an
+open-source drive-by PR that has to introduce itself to a stranger.
 
 **The one test that governs everything below: a human has to want to read it.** The body is a short
 note to a colleague, in the register you'd use in a chat message. The moment it starts reading like
@@ -53,17 +56,15 @@ with the change.
 
 ## Scale the body to the change
 
-Decide this before composing, from the commit count and `--stat`. A trivial PR does not earn the full
-template — filling three headings for a one-line change is noise, and the reviewer learns nothing from
-`## What` sitting above a sentence that repeats the title.
+Decide this before composing, from `--stat`. A trivial PR does not earn the full template — filling
+three headings for a one-line change is noise, and the reviewer learns nothing from `## What` sitting
+above a sentence that repeats the title.
 
 - **Trivial** (a one-liner, a typo, a version bump, a copy tweak): no headings at all. One or two
-  plain sentences — what and why — and nothing else. Often the commit body already says it; then just
-  use that.
-- **Small** (one focused change, a handful of files, a single commit or two): `What` and `Why`, a
-  couple of sentences each, no `Notes` unless there's genuinely something to note. Drop `Why` too if
-  the title already answers it.
-- **Normal** (a feature or a refactor spanning several commits): the full template as below.
+  plain sentences — what and why — and nothing else.
+- **Small** (one focused change, a handful of files): `What` and `Why`, a couple of sentences each, no
+  `Notes` unless there's genuinely something to note. Drop `Why` too if the title already answers it.
+- **Normal** (a feature or a refactor spanning several areas): the full template as below.
 
 Never pad a section to justify its heading. If a heading's content would be one obvious sentence,
 drop the heading and keep the sentence.
@@ -75,55 +76,60 @@ drop the heading and keep the sentence.
 Read the current branch name. Extract a ticket (`[A-Z][A-Z0-9]+-\d+` or `#123`) from it, and from
 commit footers (`Refs:`/`Closes:`).
 
-- **Ticket found** → it goes in the title, the same way commits carry it (right after the colon), and
-  into the body as a closing/reference line.
+- **Ticket found** → it goes at the start of the title's description and into the body as a
+  closing/reference line.
 - **No ticket, and the branch doesn't follow the convention** → propose a compliant branch name
-  (`<type>/<kebab-summary>`, or `<type>/<ticket>-<kebab-summary>` if a ticket surfaces from commits)
-  and offer to rename it, then continue. Don't block on it, and don't invent a ticket number.
+  (`<area>/<kebab-summary>`, or `<area>/<ticket>-<kebab-summary>` if a ticket surfaces) and offer to
+  rename it, then continue. Don't block on it, and don't invent a ticket number.
 
 Then check the branch actually exists on the remote — `git rev-parse --abbrev-ref @{upstream}` or
 `git ls-remote --heads origin <branch>`. **A PR cannot be created from a branch the host can't see.**
 Not pushed → say so and ask whether to push (`git push -u origin <branch>`); push only on a yes.
-Pushed but behind local HEAD → point that out too, so the PR doesn't describe commits nobody can read.
+Pushed but behind local HEAD → point that out too, so the PR doesn't describe changes nobody can read.
 
-### 2. Gather commits (no diff yet)
+### 2. Read the diff
 
-- **update**: read the PR's metadata and commit list from the MCP.
-- **create**: read the branch's commits ahead of the base (`main`/`master`, or whatever the repo's
-  default is) — `git log <base>..HEAD`, or from the MCP.
+This is the main investigation step.
+
+- Start with the changed-file summary — `git diff --stat <base>...HEAD` against the base branch
+  (`main`/`master`, or whatever the repo's default is). It tells you the size of the change and which
+  areas it touches, and it decides the body scale.
+- Then read the actual diff — `git diff <base>...HEAD` locally, or the PR's diff from the MCP in
+  **update** mode — and work out what the change _does_: new behaviour, changed behaviour, removed
+  code, contracts and public signatures that moved, config and dependency changes. Group it by area
+  rather than by file; skim the mechanical hunks (renames, formatting, generated files) and spend the
+  attention on the hunks that change behaviour.
+- Summarize big diffs by area; reading 2000 lines verbatim helps no one.
+- **Trivial change → stop at `--stat`** plus a glance at the single hunk. Don't run the full pipeline
+  on a typo fix.
+- The aggregate branch diff comes from local git, so **create** mode needs no PR to read it. Never
+  open a throwaway draft PR just to get at a diff.
 
 > MCP note: use whatever operations the connected code-hosting MCP exposes for reading a PR — its
 > metadata, changed-file list, and diff. Don't hardcode one provider's tool names; discover them from
 > the available tools. GitHub, GitLab and Bitbucket MCPs all provide equivalents.
 
-### 3. Parse the Conventional Commits
+### 3. Look for the "why"
 
-Collect types, scopes, the breaking flag (`!` or `BREAKING CHANGE:` footer), subjects, and bodies
-(bodies are the best source for the "Why"). If commits aren't conventional, degrade gracefully:
-infer intent from subjects + diff and still produce the template. Don't refuse.
+The diff says what changed; it rarely says why. Sources for that, in order: the ticket, the commit
+message bodies (`git log <base>..HEAD`), comments and docs touched by the diff itself, and what the
+user tells you. Take the intent, not the wording, and ignore the shape of the messages entirely — a
+branch of `wip` commits and a branch of carefully written ones should produce the same PR body.
 
-### 4. Pull the diff only if needed
+No real signal anywhere → omit the "Why", and say so when you show the draft. Never invent a
+motivation.
 
-- Start with the changed-file summary (filenames + added/removed counts) — often enough for "What":
-  `git diff --stat <base>...HEAD`.
-- Pull the real diff only when the summary isn't enough — `git diff <base>...HEAD` locally, or the
-  PR's diff from the MCP in **update** mode — and skim for the meaningful hunks. Summarize big diffs
-  by area; reading 2000 lines verbatim helps no one.
-- The aggregate branch diff comes from local git, so **create** mode needs no PR to read it. Never
-  open a throwaway draft PR just to get at a diff.
-- **Trivial PR → stop at `--stat`.** A one-line body needs no diff reading, and steps 1–3 plus the
-  `--stat` are the whole investigation. Don't run the full pipeline on a typo fix.
+### 4. Compose the title
 
-### 5. Compose the title
+One short imperative line describing the aggregate change, read off the diff: lowercase start, no
+trailing period, ≤ ~70 chars, ticket first when there is one. Optionally prefix the area it touches
+when that makes it clearer (`task list: ...`). Don't copy a single commit's subject — the title
+summarizes the whole branch.
 
-`<type>(<scope>)!: <description>` — type by precedence, scope only if shared, `!` if breaking, short
-imperative aggregate summary, ticket right after the colon when there is one (see **Conventions used
-by this skill**).
+Example: a branch that adds a v2 users endpoint and deletes the v1 one → `add v2 users endpoint and
+remove v1`. If the change is breaking, that belongs in **Notes**, not in title punctuation.
 
-Example (mixed + breaking): commits `feat(api): add v2 users endpoint`, `refactor(api)!: drop v1`
-→ `feat(api)!: add v2 users endpoint and remove v1`.
-
-### 6. Compose the body — use this template
+### 5. Compose the body — use this template
 
 This is the **normal**-size shape — for trivial and small changes use the reduced forms above. Three
 sections, two of them usually short. **Omit any section you can't fill** — an empty or hand-wavy
@@ -134,11 +140,11 @@ section is worse than none. ~100–200 words is a ceiling, not a target.
 
 ## What
 
-<2–4 sentences: the aggregate change, which modules/behaviours changed. From subjects + file summary.>
+<2–4 sentences: the aggregate change, which modules/behaviours changed. Straight from the diff.>
 
 ## Why
 
-<The problem, motivation, decision. From commit bodies/footers and the ticket. No real signal → omit.>
+<The problem, motivation, decision — from step 3. No real signal → omit.>
 
 ## Notes
 
@@ -164,7 +170,7 @@ Prose over cryptic fragments; reviewers read this like a short note.
 If the PR is too big to keep the body under ~200 words, say so — that's a signal the PR itself should
 be split.
 
-### 7. Show it, then write it to the PR
+### 6. Show it, then write it to the PR
 
 **Show the final title and body in chat first and get a yes.** A PR is outward-facing — teammates get
 notified, CI starts, and a bad description is what everyone reads first. Same human-in-the-loop gate
@@ -181,6 +187,9 @@ Then link the PR.
 
 ## Guardrails
 
+- **The diff decides what the PR says.** Don't describe a change because a commit message claims it;
+  describe what the diff does. A commit that says one thing and changes another → trust the diff, and
+  mention the mismatch to the user if it looks like a mistake.
 - **Never fabricate** — no invented tickets, test steps, or rationale. Missing signal → omit.
 - **Write for a teammate, not a stranger.** No product introductions, no restating the stack, no
   explaining conventions the repo already documents. Short is the goal, not a compromise.
@@ -189,7 +198,8 @@ Then link the PR.
   program, cut it.
 - **Match the body to the size of the change** — a trivial PR gets one or two sentences and no
   headings. Never fill a heading just because the template has one.
-- **Diff discipline** — commits + file summary first; full diff only when needed; summarize large diffs.
+- **Diff discipline** — `--stat` first to size the change, then the hunks that matter; summarize large
+  diffs by area.
 - **Nothing outward-facing without a yes** — no pushing a branch, no creating or editing a PR before
   the user has seen the title and body.
 - **Don't merge or review** — this skill writes the PR's own title and description only.
@@ -200,19 +210,19 @@ Then link the PR.
 
 Edit this section when adapting the skill to a repo.
 
-**Types + precedence** (used to pick the PR title's type when commits are mixed — most user-facing
-wins): `feat > fix > perf > refactor > revert > build > ci > test > docs > style > chore`.
+**Title:** a single short imperative line summarizing the _aggregate_ change as read from the diff —
+lowercase start, no trailing period, ≤ ~70 chars, optional `<area>: ` prefix, ticket first when there
+is one (`TICKET-100 add v2 users endpoint`). Not a copy of one commit's subject, and no message-format
+scheme imposed on it.
 
-**Title:** `<type>(<scope>)!: <ticket> <description>`. `scope` only if all/most commits share it. `!`
-if any commit is breaking. `description`: imperative, lowercase start, no trailing period, ≤ ~70 chars,
-a summary of the _aggregate_ change (not a copy of one commit).
+**Source of the summary:** the branch diff against the base. Commit messages are a hint for the "Why"
+only, in whatever form they happen to take.
 
 **Ticket (optional):** extracted from branch name / commit footers, pattern `[A-Z][A-Z0-9]+-\d+` or
-`#123`. Same placement as in commit messages — **in the subject**, right after the colon
-(`feat(api): TICKET-100 add v2 users endpoint`) — plus a `Closes #123` / tracker-key line at the top of
-the body when the host can auto-close from it. None found → omit both, never invent.
+`#123`. Placed at the start of the title, plus a `Closes #123` / tracker-key line at the top of the
+body when the host can auto-close from it. None found → omit both, never invent.
 
-**Branch naming:** `<type>/<ticket>-<kebab-summary>` or `<type>/<kebab-summary>` — proposed when the
+**Branch naming:** `<area>/<ticket>-<kebab-summary>` or `<area>/<kebab-summary>` — proposed when the
 current branch doesn't conform.
 
 **Remote precondition:** the branch must exist on the remote before a PR can be created. Push only
