@@ -8,9 +8,11 @@
     [statuses]="statuses"
     [selectedStatus]="store.statusFilter()"
     [selectedTag]="store.tagFilter()"
+    [sortOrder]="store.sortOrder()"
     (searchChange)="store.setSearch($event)"
     (selectedStatusChange)="store.setStatusFilter($event)"
     (selectedTagChange)="store.setTagFilter($event)"
+    (sortOrderChange)="store.setSortOrder($event)"
   />
 
   <task-stats-bar

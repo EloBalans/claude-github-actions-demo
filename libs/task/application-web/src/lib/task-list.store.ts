@@ -28,6 +28,7 @@ import {
   summarizeTasks,
   type Task,
   type TaskQuery,
+  type TaskSortOrder,
   type TaskStats,
   type TaskStatus,
 } from '@claude-actions/task/domain';
@@ -45,6 +46,7 @@ export class TaskListStore {
   private readonly search = signal(EMPTY_TASK_QUERY.search);
   private readonly status = signal<TaskStatus | null>(EMPTY_TASK_QUERY.status);
   private readonly tag = signal<string | null>(EMPTY_TASK_QUERY.tag);
+  private readonly order = signal<TaskSortOrder>('newest');
   private readonly tasksState = signal<readonly Task[]>([]);
   private readonly loadingState = signal(false);
   private readonly errorState = signal<string | null>(null);
@@ -58,11 +60,16 @@ export class TaskListStore {
     shareReplay({ bufferSize: 1, refCount: true }),
   );
 
-  readonly tasks = this.tasksState.asReadonly();
+  readonly tasks = computed(() => {
+    const tasks = [...this.tasksState()];
+
+    return this.order() === 'newest' ? tasks : tasks.reverse();
+  });
   readonly loading = this.loadingState.asReadonly();
   readonly error = this.errorState.asReadonly();
   readonly statusFilter = this.status.asReadonly();
   readonly tagFilter = this.tag.asReadonly();
+  readonly sortOrder = this.order.asReadonly();
 
   readonly stats = computed(() => summarizeTasks(this.tasks()));
   readonly boardTotal = computed(() => this.boardStatsState()?.total ?? null);
@@ -114,6 +121,10 @@ export class TaskListStore {
 
   setTagFilter(tag: string | null): void {
     this.tag.set(tag);
+  }
+
+  setSortOrder(order: TaskSortOrder): void {
+    this.order.set(order);
   }
 
   advance(task: Task): void {
